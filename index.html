@@ -1,0 +1,174 @@
+# abdellaoui.suilha-kings  
+import React, { useState } from 'react';
+
+const subjects = {
+  'الانجليزية': Array.from({ length: 100 }, (_, i) => ({
+    question: `What does question ${i + 1} mean?`,
+    options: ['Option A', 'Option B', 'Correct Answer', 'Option D'],
+    answer: 'Correct Answer'
+  })),
+  'الفرنسية': Array.from({ length: 100 }, (_, i) => ({
+    question: `Quelle est la signification de la question ${i + 1} ?`,
+    options: ['Réponse A', 'Bonne Réponse', 'Réponse C', 'Réponse D'],
+    answer: 'Bonne Réponse'
+  })),
+  'العلوم': Array.from({ length: 100 }, (_, i) => ({
+    question: `ما هو السؤال رقم ${i + 1}؟`,
+    options: ['خيار أ', 'خيار ب', 'الخيار الصحيح', 'خيار د'],
+    answer: 'الخيار الصحيح'
+  })),
+  'الفيزياء': Array.from({ length: 100 }, (_, i) => ({
+    question: `ما نتيجة السؤال ${i + 1} في الفيزياء؟`,
+    options: ['إجابة 1', 'إجابة 2', 'الإجابة الصحيحة', 'إجابة 4'],
+    answer: 'الإجابة الصحيحة'
+  })),
+  'التربية الاسلامية': Array.from({ length: 100 }, (_, i) => ({
+    question: `اختر الجواب الصحيح للسؤال ${i + 1} في التربية الإسلامية`,
+    options: ['خيار 1', 'خيار 2', 'الإجابة الصحيحة', 'خيار 4'],
+    answer: 'الإجابة الصحيحة'
+  })),
+  'الرياضيات': Array.from({ length: 100 }, (_, i) => ({
+    question: `ما هو ناتج العملية ${i + 1}?`,
+    options: ['1', '2', '3', '4'],
+    answer: '3'
+  })),
+  'المنطق': [
+    {
+      question: 'إذا كانت كل القطط حيوانات، وكل الحيوانات لديها قلب، هل كل القطط لديها قلب؟',
+      options: ['صح', 'خطأ'],
+      answer: 'صح'
+    },
+    {
+      question: 'ما الرقم التالي في التسلسل: 2، 4، 8، 16، ... ؟',
+      options: ['32', '24', '20'],
+      answer: '32'
+    },
+    {
+      question: 'إذا كان اليوم الثلاثاء، فبعد 3 أيام سيكون؟',
+      options: ['الجمعة', 'السبت', 'الخميس'],
+      answer: 'الجمعة'
+    },
+    {
+      question: 'جميع الأناناس فواكه. بعض الفواكه حلوة. هل كل الأناناس حلوة؟',
+      options: ['نعم', 'لا'],
+      answer: 'لا'
+    },
+    {
+      question: 'في أي اتجاه يتجه الظل عندما يكون وقت الظهيرة؟',
+      options: ['جنوب', 'شمال', 'شرق', 'غرب'],
+      answer: 'شمال'
+    }
+  ]
+};
+
+export default function QuizApp() {
+  const [subject, setSubject] = useState('');
+  const [answers, setAnswers] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+
+  const questionsPerPage = 10;
+  const questions = subject ? subjects[subject].slice(currentPage * questionsPerPage, (currentPage + 1) * questionsPerPage) : [];
+  const totalPages = subject ? Math.ceil(subjects[subject].length / questionsPerPage) : 0;
+
+  const handleAnswer = (qIndex, option) => {
+    setAnswers(prev => ({ ...prev, [qIndex + currentPage * questionsPerPage]: option }));
+  };
+
+  const handleSubmit = () => {
+    setSubmitted(true);
+  };
+
+  const getScore = () => {
+    return Object.entries(answers).reduce((score, [index, userAnswer]) => {
+      const correctAnswer = subjects[subject][index].answer;
+      return score + (userAnswer === correctAnswer ? 1 : 0);
+    }, 0);
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto p-6" dir="rtl" style={{ fontFamily: 'Arial, sans-serif' }}>
+      <h1 className="text-3xl font-bold text-center mb-6">منصة الاختبارات الدراسية</h1>
+
+      <select
+        className="w-full p-3 border mb-6 rounded"
+        onChange={(e) => {
+          setSubject(e.target.value);
+          setAnswers({});
+          setSubmitted(false);
+          setCurrentPage(0);
+        }}
+        value={subject}
+      >
+        <option value="" disabled>اختر المادة</option>
+        {Object.keys(subjects).map((subj) => (
+          <option key={subj} value={subj}>{subj}</option>
+        ))}
+      </select>
+
+      {subject && (
+        <>
+          <div className="grid gap-6">
+            {questions.map((q, index) => (
+              <div key={index} className="p-4 border rounded shadow">
+                <p className="mb-3 font-semibold">{(currentPage * questionsPerPage) + index + 1}. {q.question}</p>
+                {q.options.map((opt, i) => (
+                  <label key={i} className="block mb-2" style={{ cursor: submitted ? 'default' : 'pointer' }}>
+                    <input
+                      type="radio"
+                      name={`question-${(currentPage * questionsPerPage) + index}`}
+                      value={opt}
+                      checked={answers[(currentPage * questionsPerPage) + index] === opt}
+                      onChange={() => handleAnswer(index, opt)}
+                      disabled={submitted}
+                      style={{ marginRight: '8px' }}
+                    /> {opt}
+                  </label>
+                ))}
+                {submitted && (
+                  <p style={{ color: answers[(currentPage * questionsPerPage) + index] === q.answer ? 'green' : 'red' }}>
+                    الإجابة الصحيحة: {q.answer}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-between items-center mt-6">
+            <button
+              className="bg-gray-300 px-4 py-2 rounded disabled:opacity-50"
+              onClick={() => setCurrentPage(p => p - 1)}
+              disabled={currentPage === 0}
+            >
+              السابق
+            </button>
+            <button
+              className="bg-gray-300 px-4 py-2 rounded disabled:opacity-50"
+              onClick={() => setCurrentPage(p => p + 1)}
+              disabled={currentPage === totalPages - 1}
+            >
+              التالي
+            </button>
+          </div>
+
+          {!submitted && (
+            <div className="text-center mt-6">
+              <button
+                className="bg-blue-600 text-white px-6 py-2 rounded"
+                onClick={handleSubmit}
+              >
+                إرسال جميع الإجابات
+              </button>
+            </div>
+          )}
+
+          {submitted && (
+            <div className="text-center mt-6">
+              <p className="text-xl font-bold text-green-700">نتيجتك النهائية: {getScore()} من {subjects[subject].length}</p>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
